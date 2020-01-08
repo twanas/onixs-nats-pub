@@ -5,7 +5,7 @@
 Install nats
 
 ```
-git clone git@github.com:nats-io/nats.c.git .
+git clone https://github.com/nats-io/nats.c.git && cd nats.c
 mkdir build && cd build
 cmake .. -DNATS_BUILD_STREAMING=OFF -DCMAKE_BUILD_TYPE=Release
 sudo make install
