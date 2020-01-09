@@ -12,5 +12,7 @@ set(CMAKE_CXX_STANDARD 11)
 
 add_definitions(-DLICENSE_FOLDER="${CMAKE_SOURCE_DIR}/../license")
 add_definitions(-DCONNECTIVITY_CONFIGURATION_FILE="${CMAKE_SOURCE_DIR}/resources/config.xml")
+add_definitions(-DNETWORK_INTERFACE_A="0.0.0.0")
+add_definitions(-DNETWORK_INTERFACE_B="0.0.0.0")
 
 add_subdirectory(src)

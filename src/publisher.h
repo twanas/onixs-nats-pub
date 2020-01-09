@@ -33,10 +33,13 @@ public:
 
         HandlerSettings handler_cfg;
         handler_cfg.bookManagement().consolidatedBooks().bboTracking().price().enabled(true);
+        handler_cfg.bookManagement().directBooks().maintain(true);
         handler_cfg.bookManagement().consolidatedBooks().maintain(true);
         handler_cfg.bookManagement().mboBooks().maintain(false);
         handler_cfg.feeds().connectivityConfigurationFile(CONNECTIVITY_CONFIGURATION_FILE);
         handler_cfg.channel(310);
+        handler_cfg.feeds().feedANetworkInterfaces(NETWORK_INTERFACE_A);
+        handler_cfg.feeds().feedBNetworkInterfaces(NETWORK_INTERFACE_B);
 	
         handler_ = std::unique_ptr<Handler>(new Handler(handler_cfg));
         handler_->bindFeedEngine(*engine_);
