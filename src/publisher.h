@@ -57,8 +57,12 @@ public:
            << sec.symbol()
            << "\", \"bid\": "
            << toStr(Decimal(book.bids().at(0).price()))
+           << "\", \"bidv\": "
+           << book.bids().at(0).quantity()
            << ",  \"ask\": "
            << toStr(Decimal(book.bids().at(0).price()))
+           << "\", \"askv\": "
+           << book.offers().at(0).quantity()
            << "}";
 
         conn_->publish("cme.md", ss.str());

@@ -42,6 +42,8 @@ public:
     {
         if (status_ == NATS_OK)
             natsConnection_PublishString(conn_, subject.c_str(), text.c_str());
+        else
+            std::cout << "Error with publish" << std::endl;
     }
 
 private:

@@ -5,13 +5,11 @@
 
 void onMsg(natsConnection *nc, natsSubscription *sub, natsMsg *msg, void *closure)
 {
-    // Prints the message, using the message getters:
     printf("Received msg: %s - %.*s\n",
            natsMsg_GetSubject(msg),
            natsMsg_GetDataLength(msg),
            natsMsg_GetData(msg));
 
-    // Don't forget to destroy the message!
     natsMsg_Destroy(msg);
 }
 
@@ -36,9 +34,6 @@ int main()
 
     std::shared_ptr<Connection> conn = std::make_shared<Connection>();
     std::shared_ptr<Publisher> pub = std::make_shared<Publisher>(subject, conn);
-
-    //for(auto i = 0; i<10; ++i)
-    //    conn->publish("cme.md", "{\"inst\": \"fut-ES_201912\", \"bid\": 1300.25,  \"ask\": 1300.50}");
 
     while(1)
     {
