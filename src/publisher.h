@@ -3,7 +3,7 @@
 #include "connection.h"
 #include "OnixS/CME/MDH.h"
 #include <memory>
-#include <iostream>
+#include <sstream>
 
 using namespace OnixS::CME::MDH;
 
@@ -23,8 +23,8 @@ public:
     {
 
         FileLoggerSettings filelogger_cfg;
-        filelogger_cfg.severityLevel(LogSeverity::Enum::Debug);
-        filelogger_cfg.filename("Handler.log");
+        filelogger_cfg.severityLevel(LogSeverity::Enum::Important);
+        filelogger_cfg.filename("FeedHandler.log");
         file_logger_ = std::unique_ptr<FileLogger>(new FileLogger(filelogger_cfg));
 
         FeedEngineSettings engine_cfg;
@@ -40,17 +40,25 @@ public:
 	
         handler_ = std::unique_ptr<Handler>(new Handler(handler_cfg));
         handler_->bindFeedEngine(*engine_);
-	handler_->bindLogger(*file_logger_);
+    	handler_->bindLogger(*file_logger_);
         handler_->registerSecurityListener(*this);
 
         SessionSettings session_cfg;
         handler_->start(session_cfg);
     }
 
-    virtual void onBookUpdate(Handler&, const Security&, const ConsolidatedBook&) override
+    virtual void onBookUpdate(Handler&, const Security& sec, const ConsolidatedBook& book) override
     {
-	std::cout << "depth received" << std::endl;
-        conn_->publish(subject_, "{ES}");
+        std::stringstream ss;
+        ss << "{\"inst\": \""
+           << sec.symbol()
+           << "\", \"bid\": "
+           << toStr(Decimal(book.bids().at(0).price()))
+           << ",  \"ask\": "
+           << toStr(Decimal(book.bids().at(0).price()))
+           << "}";
+
+        conn_->publish("cme.md", ss.str());
     }
 
 private:
