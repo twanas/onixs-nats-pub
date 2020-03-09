@@ -89,6 +89,11 @@ public:
         handleLimitsAndBanding(sec, args.message());
     }
 
+    void onDefinition(Handler &, const Security &sec, const InstrumentDefinitionFuture27Args &args) override {
+        handleLimitsAndBanding(sec, args.message());
+    }
+
+
 private:
     template<typename Entry>
     void handleLimitsAndBanding(const Security &sec, const Entry &entry) {
