@@ -26,10 +26,10 @@ public:
         filelogger_cfg.filename("FeedHandler.log");
         file_logger_ = std::unique_ptr<FileLogger>(new FileLogger(filelogger_cfg));
 
-        FeedEngine engine_cfg;
-        engine_cfg.socketBufferSize(8 * 1024 * 1024);
+        MultithreadedFeedEngineSettings engine_cfg;
+        engine_cfg.net().socketBufferSize(8 * 1024 * 1024);
         engine_cfg.threadPool().size(4);
-        engine_ = std::unique_ptr<FeedEngine>(new FeedEngine(engine_cfg));
+        engine_ = std::unique_ptr<MultithreadedFeedEngine>(new MultithreadedFeedEngine(engine_cfg));
 
         std::vector<int> channels{
                 310,
@@ -112,7 +112,7 @@ private:
 private:
     std::string subject_;
     std::unique_ptr<Handler> handler_;
-    std::unique_ptr<FeedEngine> engine_;
+    std::unique_ptr<MultithreadedFeedEngine> engine_;
     std::unique_ptr<FileLogger> file_logger_;
     std::shared_ptr<Connection> conn_;
 };
