@@ -93,15 +93,24 @@ private:
     template<typename Entry>
     void handleLimitsAndBanding(const Security &sec, const Entry &entry) {
 
+	bool high_or_low{false};
+
+        std::stringstream ss;
+        ss << "{\"symbol\": \"" << sec.symbol() << "\"";
+
         Decimal high, low;
-        if (entry.highLimitPrice(high) && entry.lowLimitPrice(low)) {
+        if (entry.highLimitPrice(high)) {
+    	   ss << ", \"high_limit\": " << toStr(high);
+	   high_or_low = true;
+	}
+        if (entry.lowLimitPrice(low)) {
+	   ss << ", \"low_limit\": " << toStr(low);
+	   high_or_low = true;
+	}
 
-	    std::stringstream ss;
-	    ss << "{\"symbol\": \"" << sec.symbol()
-    	       << "\", \"high_limit\": " << toStr(high)
-	       << "\", \"low_limit\": " << toStr(low)
-	       << "}";
+	ss << "}";
 
+	if(high_or_low) {
 	    conn_->publish("cme.md", ss.str());
 	}
 
