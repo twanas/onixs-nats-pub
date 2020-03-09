@@ -35,7 +35,7 @@ int main()
     std::shared_ptr<Connection> conn = std::make_shared<Connection>();
     std::shared_ptr<Publisher> pub = std::make_shared<Publisher>(subject, conn);
 
-    while(1)
+    for(;;)
     {
         std::this_thread::sleep_for(std::chrono::duration<double, std::milli>(2));
     }
@@ -44,108 +44,3 @@ int main()
 
 
 }
-
-
-/*
-struct BBA
-{
-    int bidp;
-    int askp;
-    int bidv;
-    int askv;
-    int status;
-};
-
-struct Trade
-{
-    int price;
-    int qty;
-};
-
-struct Publisher: public MarketDataListener
-{
-    Publisher(const Connection& c) {
-        // handler.start();
-    }
-
-    ~Publisher()
-    {
-        // handler.stop();
-    }
-
-    void onConsolidatedBook(const ConsolidatedBook& book)
-    {
-        BBA = bba::build(book, status_[sec.id()]);
-        conn->push_(bba.json());
-    }
-
-    void onTrade(const Trade& trade)
-    {
-        BBA = trade::build(trade);
-        push_(bba.json());
-    }
-
-    void onStatus(const Status& status)
-    {
-        status_[sec.id()] = status.num;
-    }
-
-private:
-    std::unordered_map<uint32_t, int> status_;
-};
-
-struct Connection
-{
-    Connection(const std::string& host): host_(host)
-    {}
-    void publish();
-private:
-    std::string host_;
-};
-
-struct Subscription
-{
-    std::string topic;
-    uint16_t channel;
-    std::vector<std::string> symbols;
-};
-
-struct Config
-{
-    std::string host;
-    std::vector<std::string> subscriptions;
-};
-
-struct Service
-{
-    Service(const Config& cfg)
-    {
-        auto conn = std::make_shared<Connection>(cfg.host);
-
-        for(const auto& sub: cfg.subscriptions)
-        {
-            subs_.emplace_back(
-                    Publisher(sub, conn_);
-            )
-        }
-    }
-
-private:
-    std::vector<Subscription> subs_;
-}
-
-int main()
-{
-    auto cfg = Config{
-        "nats://xxxx.xxx.xxx",
-        {
-            "md.cme.310",
-            310,
-            {"ESU9", "ESZ9"}
-        }
-    };
-
-    Service svc(cfg);
-    // wait for keyboard interrupt
-}
- */
