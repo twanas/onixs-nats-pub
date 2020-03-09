@@ -26,10 +26,10 @@ public:
         filelogger_cfg.filename("FeedHandler.log");
         file_logger_ = std::unique_ptr<FileLogger>(new FileLogger(filelogger_cfg));
 
-        MultithreadedFeedEngineSettings engine_cfg;
-        engine_cfg.net().socketBufferSize(8 * 1024 * 1024);
-        engine_cfg.threadPool().size(4);
-        engine_ = std::unique_ptr<MultithreadedFeedEngine>(new MultithreadedFeedEngine(engine_cfg));
+        FeedEngineSettings engine_cfg;
+        engine_cfg.socketBufferSize(8 * 1024 * 1024);
+        engine_cfg.threadCount(8);
+        engine_ = std::unique_ptr<FeedEngine>(new FeedEngine(engine_cfg));
 
         std::vector<int> channels{
                 310,
@@ -49,22 +49,26 @@ public:
 
         for (auto channel: channels) {
             HandlerSettings handler_cfg;
-            handler_cfg.bookManagement().directBooks().maintain(false);
+            handler_cfg.bookManagement().directBooks().maintain(true);
             handler_cfg.bookManagement().consolidatedBooks().maintain(false);
             handler_cfg.bookManagement().mboBooks().maintain(false);
             handler_cfg.feeds().connectivityConfigurationFile(CONNECTIVITY_CONFIGURATION_FILE);
             handler_cfg.channel(channel);
             handler_cfg.feeds().feedANetworkInterfaces(NETWORK_INTERFACE_A);
             handler_cfg.feeds().feedBNetworkInterfaces(NETWORK_INTERFACE_B);
+          
+            auto handler = std::unique_ptr<Handler>(new Handler(handler_cfg));
+            handler->bindFeedEngine(*engine_);
+            handler->bindLogger(*file_logger_);
+            handler->registerSecurityListener(*this);
 
-            handler_ = std::unique_ptr<Handler>(new Handler(handler_cfg));
-            handler_->bindFeedEngine(*engine_);
-            handler_->bindLogger(*file_logger_);
-            handler_->registerSecurityListener(*this);
-
-            SessionSettings session_cfg;
-            handler_->start(session_cfg);
+	    handlers_.push_back(std::move(handler));
         }
+
+       for (auto& handler: handlers_) {
+            SessionSettings session_cfg;
+            handler->start(session_cfg);
+       }
     }
 
     void onLimitsAndBanding(Handler &, const Security &sec, const LimitsAndBanding50Args &args) override {
@@ -90,29 +94,23 @@ private:
     void handleLimitsAndBanding(const Security &sec, const Entry &entry) {
 
         Decimal high, low;
-        if (entry.highLimitPrice(high)) {
-            std::cout << sec.symbol() << " high Limit:" << toStr(high) << std::endl;
-        }
-        if (entry.lowLimitPrice(low)) {
-            std::cout << sec.symbol() << " low Limit:" << toStr(high) << std::endl;
-        }
+        if (entry.highLimitPrice(high) && entry.lowLimitPrice(low)) {
 
-        std::stringstream ss;
-        ss << "{\"symbol\": \""
-           << sec.symbol()
-           << "\", \"high_limit\": "
-           << toStr(high)
-           << "\", \"low_limit\": "
-           << toStr(low)
-           << "}";
+	    std::stringstream ss;
+	    ss << "{\"symbol\": \"" << sec.symbol()
+    	       << "\", \"high_limit\": " << toStr(high)
+	       << "\", \"low_limit\": " << toStr(low)
+	       << "}";
 
-        conn_->publish("cme.md", ss.str());
+	    conn_->publish("cme.md", ss.str());
+	}
+
     }
 
 private:
     std::string subject_;
-    std::unique_ptr<Handler> handler_;
-    std::unique_ptr<MultithreadedFeedEngine> engine_;
+    std::vector<std::unique_ptr<Handler>> handlers_;
+    std::unique_ptr<FeedEngine> engine_;
     std::unique_ptr<FileLogger> file_logger_;
     std::shared_ptr<Connection> conn_;
 };
