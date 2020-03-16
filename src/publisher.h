@@ -14,7 +14,8 @@ void initialize() {
     OnixS::CME::MDH::initialize(settings);
 }
 
-class Publisher : SecurityListener
+
+class Publisher : SecurityListener, MarketDataListener
 {
 public:
     explicit Publisher(const std::string &subject, std::shared_ptr<Connection> &conn)
@@ -49,7 +50,7 @@ public:
 
         for (auto channel: channels) {
             HandlerSettings handler_cfg;
-            handler_cfg.bookManagement().directBooks().maintain(true);
+            handler_cfg.bookManagement().directBooks().maintain(false);
             handler_cfg.bookManagement().consolidatedBooks().maintain(false);
             handler_cfg.bookManagement().mboBooks().maintain(false);
             handler_cfg.feeds().connectivityConfigurationFile(CONNECTIVITY_CONFIGURATION_FILE);
@@ -61,6 +62,7 @@ public:
             handler->bindFeedEngine(*engine_);
             handler->bindLogger(*file_logger_);
             handler->registerSecurityListener(*this);
+            handler->registerMarketDataListener(*this);
 
 	    handlers_.push_back(std::move(handler));
         }
@@ -93,6 +95,10 @@ public:
         handleLimitsAndBanding(sec, args.message());
     }
 
+    void onPacket(Handler &, const PacketArgs & packet) override {
+        sendingtime_ = packet.sendingTime();
+    }
+
 
 private:
     template<typename Entry>
@@ -101,7 +107,8 @@ private:
 	bool high_or_low{false};
 
         std::stringstream ss;
-        ss << "{\"symbol\": \"" << sec.symbol() << "\"";
+        ss << "{\"sendingtime\": \"" << toStr(sendingtime_) << "\"";
+        ss << ", \"symbol\": \"" << sec.symbol() << "\"";
 
         Decimal high, low;
         if (entry.highLimitPrice(high)) {
@@ -127,4 +134,5 @@ private:
     std::unique_ptr<FeedEngine> engine_;
     std::unique_ptr<FileLogger> file_logger_;
     std::shared_ptr<Connection> conn_;
+    OnixS::CME::MDH::Timestamp sendingtime_;
 };
