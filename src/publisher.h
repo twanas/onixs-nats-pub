@@ -133,8 +133,8 @@ private:
 
         std::stringstream ss;
         ss << "{\"sendingtime\": \"" << toStr(sendingtime_) << "\"";
-        ss << "{\"transacttime\": \"" << toStr(transacttime) << "\"";
-        ss << ", \"symbol\": \"" << sec.symbol() << "\"";
+        ss << ",\"transacttime\": \"" << toStr(transacttime) << "\"";
+        ss << ",\"symbol\": \"" << sec.symbol() << "\"";
 
         Decimal high, low;
         if (entry.highLimitPrice(high)) {
