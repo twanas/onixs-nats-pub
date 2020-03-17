@@ -133,6 +133,7 @@ private:
 
         std::stringstream ss;
         ss << "{\"sendingtime\": \"" << toStr(sendingtime_) << "\"";
+        ss << "{\"transacttime\": \"" << toStr(entry.transactTime()) << "\"";
         ss << ", \"symbol\": \"" << sec.symbol() << "\"";
 
         Decimal high, low;
