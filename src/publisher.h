@@ -99,23 +99,23 @@ public:
     void onLimitsAndBanding(Handler &, const Security &sec, const LimitsAndBanding50Args &args) override {
         auto &msg = args.message();
         for (auto &entry: msg.entries()) {
-            handleLimitsAndBanding(sec, entry);
+            handleLimitsAndBanding(sec, entry, args.message().transactTime());
         }
     }
 
     void onLimitsAndBanding(Handler &, const Security &sec, const LimitsAndBanding34Args &args) override {
         auto &msg = args.message();
         for (auto &entry: msg.entries()) {
-            handleLimitsAndBanding(sec, entry);
+            handleLimitsAndBanding(sec, entry, args.message().transactTime());
         }
     }
 
     void onRecovery(Handler &, const Security &sec, const SnapshotFullRefresh38Args &args) override {
-        handleLimitsAndBanding(sec, args.message());
+        handleLimitsAndBanding(sec, args.message(), args.message().transactTime());
     }
 
     void onRecovery(Handler &, const Security &sec, const SnapshotFullRefresh52Args &args) override {
-        handleLimitsAndBanding(sec, args.message());
+        handleLimitsAndBanding(sec, args.message(), args.message().transactTime());
     }
 
     void onPacket(Handler &, const PacketArgs &packet) override {
@@ -125,7 +125,7 @@ public:
 
 private:
     template<typename Entry>
-    void handleLimitsAndBanding(const Security &sec, const Entry &entry) {
+    void handleLimitsAndBanding(const Security &sec, const Entry &entry, const Timestamp& transacttime) {
 
         std::lock_guard<std::mutex> lock(mtx_);
 
@@ -133,7 +133,7 @@ private:
 
         std::stringstream ss;
         ss << "{\"sendingtime\": \"" << toStr(sendingtime_) << "\"";
-        ss << "{\"transacttime\": \"" << toStr(entry.transactTime()) << "\"";
+        ss << "{\"transacttime\": \"" << toStr(transacttime) << "\"";
         ss << ", \"symbol\": \"" << sec.symbol() << "\"";
 
         Decimal high, low;
